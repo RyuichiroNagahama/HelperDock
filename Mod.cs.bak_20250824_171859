@@ -1,0 +1,58 @@
+﻿using System;
+using UnityEngine;
+using Game;
+using Game.Modding;
+
+namespace HelperDock {
+  public class Mod : IMod {
+    GameObject go;
+    public void OnLoad(UpdateSystem us){ if(go==null){ go=new GameObject("HelperDockUI"); UnityEngine.Object.DontDestroyOnLoad(go); go.AddComponent<DockUI>(); } }
+    public void OnDispose(){ if(go!=null){ UnityEngine.Object.Destroy(go); go=null; } }
+  }
+
+  public class DockUI : MonoBehaviour {
+    bool vis=true; Rect win=new Rect(8,8,520,94);
+    public static Rect CurrentRect { get; private set; }  // ← シールドの穴用
+
+    static readonly (string qn, string label)[] targets = new[]{
+      ("GridOverlay.UI, GridOverlay",            "GridOverlay (F6)"),
+      ("QuickNotes.UI, QuickNotes",              "QuickNotes (F7)"),
+      ("FpsMeter.UI, FpsMeter",                  "FpsMeter (F8)"),
+      ("ValueTweaker.ValueTweakerUI, ValueTweaker","ValueTweaker (F9)")
+    };
+
+    static bool GetVisible(string qn){
+      var t = Type.GetType(qn); if (t==null) return false;
+      var p = t.GetProperty("Visible", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+      return p!=null ? (bool)(p.GetValue(null) ?? false) : false;
+    }
+    static void SetVisible(string qn, bool v){
+      var t = Type.GetType(qn); if (t==null) return;
+      var p = t.GetProperty("Visible", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+      if (p!=null) p.SetValue(null, v);
+    }
+
+    void Update(){ if (Input.GetKeyDown(KeyCode.F4)) vis=!vis; }
+    void OnGUI(){
+      if(!vis) { CurrentRect = new Rect(0,0,0,0); return; }
+
+      win.width = 20 + targets.Length * 130f;
+      win = GUI.Window(55001, win, id=>{
+        GUILayout.Label("HelperDock (F4)  —  toggle visibilities");
+        GUILayout.BeginHorizontal();
+        foreach(var t in targets){
+          bool on = GetVisible(t.qn);
+          var prev = GUI.backgroundColor;
+          GUI.backgroundColor = on? new Color(0.6f,0.9f,0.6f):Color.white;
+          if (GUILayout.Button($"{t.label}", GUILayout.Height(24), GUILayout.MinWidth(120)))
+            SetVisible(t.qn, !on);
+          GUI.backgroundColor = prev;
+        }
+        GUILayout.EndHorizontal();
+        GUILayout.Label("Tip: F6/F7/F8/F9 でも各パネルを個別に切替。", GUILayout.Height(18));
+        GUI.DragWindow();
+      },"HelperDock");
+      CurrentRect = win;
+    }
+  }
+}

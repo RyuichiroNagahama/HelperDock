@@ -1,0 +1,44 @@
+﻿using Unity.Entities;
+using UnityEngine.InputSystem;
+using Game;
+
+namespace HelperDock
+{
+    [UpdateInGroup(typeof(UpdateSystem))]
+    public sealed partial class UISystemDevHotkey : GameSystemBase
+    {
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            ModCompat.log.Info("[HelperDock] DEVHOTKEY.OnCreate");
+        }
+
+        protected override void OnStartRunning()
+        {
+            ModCompat.log.Info("[HelperDock] DEVHOTKEY.OnStartRunning");
+        }
+
+        protected override void OnUpdate()
+        {
+            var kb = Keyboard.current;
+            if (kb == null) return;
+
+            if (kb.shiftKey.isPressed)
+            {
+                if (kb.f1Key.wasPressedThisFrame)
+                {
+                    ModCompat.log.Info("[HelperDock] HOTKEY Shift+F1 -> ToggleMainPanel");
+                    var ui = World.GetExistingSystemManaged<UISystem>();
+                    ui?.ToggleMainPanel();
+                }
+                if (kb.f2Key.wasPressedThisFrame)
+                {
+                    ModCompat.log.Info("[HelperDock] HOTKEY Shift+F2 -> ForceShowNow");
+                    var ui = World.GetExistingSystemManaged<UISystem>();
+                    ui?.ForceShowNow();
+                }
+                // reserved: Shift+F3..F12
+            }
+        }
+    }
+}

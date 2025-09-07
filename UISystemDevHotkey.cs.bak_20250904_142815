@@ -1,0 +1,64 @@
+﻿using Unity.Entities;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using System.Reflection;
+
+namespace HelperDock {
+    [DisableAutoCreation]
+    public partial class UISystemDevHotkey : SystemBase {
+        private bool _loggedOnce;
+        protected override void OnCreate()       { Debug.Log("[HelperDock] DEVHOTKEY.OnCreate"); }
+        protected override void OnStartRunning() { Debug.Log("[HelperDock] DEVHOTKEY.OnStartRunning"); }
+        protected override void OnUpdate(){
+    var kb = Keyboard.current;
+    if (kb == null) return;
+
+    if (kb.shiftKey.isPressed)
+    {
+        if (kb.f1Key.wasPressedThisFrame)  ModCompat.LogProxy.Info("[HelperDock] HOTKEY Shift+F1");
+        if (kb.f2Key.wasPressedThisFrame)  ModCompat.LogProxy.Info("[HelperDock] HOTKEY Shift+F2");
+        if (kb.f3Key.wasPressedThisFrame)  ModCompat.LogProxy.Info("[HelperDock] HOTKEY Shift+F3");
+        if (kb.f4Key.wasPressedThisFrame)  ModCompat.LogProxy.Info("[HelperDock] HOTKEY Shift+F4");
+        if (kb.f5Key.wasPressedThisFrame)  ModCompat.LogProxy.Info("[HelperDock] HOTKEY Shift+F5");
+    }
+}
+
+                var ui = World.GetExistingSystemManaged<HelperDock.UISystem>();
+                if (ui == null) return;
+
+                var t = ui.GetType();
+                var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+                // in-game フィールドがあれば尊重
+                var fInGame = t.GetField("_inGame", flags);
+                if (fInGame != null && fInGame.FieldType == typeof(bool) && !(bool)fInGame.GetValue(ui)) return;
+
+                if (Keyboard.current != null && Keyboard.current.shiftKey.isPressed && Keyboard.current.fKey.wasPressedThisFrame){
+                    bool after = HelperDock.ModCompat.ModSettings.MainPanelVisible;
+
+                    var mi = t.GetMethod("MainButtonClicked", flags);
+                    if (mi != null){
+                        mi.Invoke(ui, null);
+                        after = HelperDock.ModCompat.ModSettings.MainPanelVisible;
+                    } else {
+                        var fVis = t.GetField("_bindingMainPanelVisible", flags);
+                        var vis = fVis != null ? fVis.GetValue(ui) : null;
+                        var mUpdateBool = vis?.GetType().GetMethod("Update", new[] { typeof(bool) });
+                        if (mUpdateBool != null){
+                            after = !HelperDock.ModCompat.ModSettings.MainPanelVisible;
+                            mUpdateBool.Invoke(vis, new object[]{ after });
+                            HelperDock.ModCompat.ModSettings.MainPanelVisible = after;
+                            HelperDock.ModCompat.ModSettings.ApplyAndSave();
+                        }
+                    }
+
+                    Debug.Log("[HelperDock] DEVHOTKEY: F4 toggled -> " + HelperDock.ModCompat.ModSettings.MainPanelVisible);
+                }
+            }catch(System.Exception ex){
+                Debug.Log("[HelperDock] DEVHOTKEY error: " + ex.Message);
+            }
+        }
+    }
+}
+
+

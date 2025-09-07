@@ -1,0 +1,101 @@
+﻿using System;
+using UnityEngine;
+using Game;
+using Game.Modding;
+using ModCommon;
+
+namespace HelperDock {
+  public class Mod : IMod {
+    GameObject go;
+    public void OnLoad(UpdateSystem us){
+            // ==== HelperDock: force register UISystem (in all likely phases) ====
+            UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: force registration start");
+            try {
+                try {
+                    var sys = us.GetOrCreateSystemManaged<HelperDock.UISystem>();
+                    UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: GetOrCreateSystemManaged<UISystem> => " + (sys != null));
+                } catch (System.Exception ex) {
+                    UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: GetOrCreateSystemManaged not available: " + ex.Message);
+                }
+                try { us.UpdateAt<HelperDock.UISystem>(SystemUpdatePhase.UIUpdate);  UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: UpdateAt<UISystem>(UIUpdate) called"); } catch (System.Exception ex) { UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: UIUpdate reg failed: " + ex.Message); }
+                try { us.RequireForUpdate<HelperDock.UISystem>(); UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: RequireForUpdate<UISystem>() called"); } catch (System.Exception ex) { UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: RequireForUpdate failed: " + ex.Message); }
+            } catch (System.Exception ex) {
+                UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: force registration outer failure: " + ex);
+            }
+            // ====================================================================
+            try { updateSystem.UpdateAt<HelperDock.UISystem>(SystemUpdatePhase.UIUpdate); UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: fallback UpdateAt<HelperDock.UISystem>(UIUpdate)"); } catch (System.Exception ex) { UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: fallback failed: " + ex.Message); }
+            UnityEngine.Debug.Log("[HelperDock] Mod.OnLoad: enter");
+      Debug.Log("[HelperDock] OnLoad");
+      if(go==null){
+        go=new GameObject("HelperDockUI");
+        UnityEngine.Object.DontDestroyOnLoad(go);
+        go.AddComponent<DockUI>();
+
+        // ★ClickBlockerを確実に起動させる（1x1のダミーゾーンを一瞬ON→OFF）
+        ClickBlocker.SetZone("BOOT", new Rect(0,0,1,1), true);
+        ClickBlocker.SetZone("BOOT", Rect.zero, false);
+        Debug.Log("[HelperDock] ClickBlocker booted");
+      }
+    }
+    public void OnDispose(){ if(go!=null){ UnityEngine.Object.Destroy(go); go=null; } }
+  }
+
+  public class DockUI : MonoBehaviour {
+    bool vis=true; Rect win=new Rect(8,8,520,94);
+    static readonly (string qn, string label)[] targets = new[]{
+      ("GridOverlay.UI, GridOverlay",             "Grid (F6)"),
+      ("QuickNotes.UI, QuickNotes",               "Notes (F7)"),
+      ("FpsMeter.UI, FpsMeter",                   "FPS (F8)"),
+      ("ValueTweaker.ValueTweakerUI, ValueTweaker","Time (F9)")
+    };
+    static bool GetVisible(string qn){
+      var t = Type.GetType(qn); if (t==null) return false;
+      var p = t.GetProperty("Visible", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+      return p!=null ? (bool)(p.GetValue(null) ?? false) : false;
+    }
+    static void SetVisible(string qn, bool v){
+      var t = Type.GetType(qn); if (t==null) return;
+      var p = t.GetProperty("Visible", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+      if (p!=null) p.SetValue(null, v);
+    }
+    void Update(){ if (Input.GetKeyDown(KeyCode.F4)) vis=!vis; }
+    void OnGUI(){
+  // disabled for cohtml UI
+  return;
+      if(!vis){ ModCommon.ClickBlocker.SetZone("HelperDock", Rect.zero, false); return; }
+      win.width = 20 + targets.Length * 130f;
+      ModCommon.ClickBlocker.SetZone("HelperDock", win, true);
+      win = GUI.Window(55001, win, id=>{
+        GUILayout.Label("HelperDock (F4) — toggle panels  /  F10:overlay");
+ModCommon.ImGuiBlockerShim.Mark("HelperDock", win);
+        GUILayout.BeginHorizontal();
+        foreach(var t in targets){
+          bool on = GetVisible(t.qn);
+          var prev = GUI.backgroundColor;
+          GUI.backgroundColor = on ? new Color(0.6f,0.9f,0.6f):Color.white;
+          if (GUILayout.Button(t.label, GUILayout.Height(24), GUILayout.MinWidth(120)))
+            SetVisible(t.qn, !on);
+          GUI.backgroundColor = prev;
+        }
+        GUILayout.EndHorizontal();
+        GUI.DragWindow();
+      },"HelperDock");
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

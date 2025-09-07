@@ -1,0 +1,15 @@
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uilds/
+bin/
+*/obj/
+*/bin/
+.vs/
+*.user
+*.pdb
+*.dll
+*.so
+*.bundle
+Logs/
+Player.log

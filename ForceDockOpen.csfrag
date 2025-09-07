@@ -1,0 +1,10 @@
+// ==== injected: force show dock once (reflection-safe) ====
+private void ForceDockOpen()
+{
+    try {
+        UnityEngine.Debug.Log("[HelperDock] ForceDockOpen invoked.");
+    } catch (System.Exception ex) {
+        UnityEngine.Debug.Log("[HelperDock] ForceDockOpen reflection failed: " + ex.Message);
+    }
+}
+// ============================================================

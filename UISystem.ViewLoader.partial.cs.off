@@ -1,0 +1,104 @@
+﻿using System;
+using System.Reflection;
+
+namespace HelperDock
+{
+    public sealed partial class UISystem
+    {
+        private bool _viewTried2;
+
+        internal void EnsureViewLoaded2()
+        {
+            if (_viewTried2) return;
+            _viewTried2 = true;
+
+            try
+            {
+                Type t = this.GetType();
+                while (t != null)
+                {
+                    ModCompat.log.Info("[HelperDock] EnsureViewLoaded2: type=" + t.FullName);
+                    var methods = t.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    foreach (var m in methods)
+                    {
+                        string name = m.Name;
+
+                        // “View” を含むが、Binding/Preview/EnsureViewLoaded は除外
+                        if (name.IndexOf("View", StringComparison.OrdinalIgnoreCase) < 0) continue;
+                        if (name.IndexOf("Binding", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                        if (name.IndexOf("Preview", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+                        if (name.IndexOf("EnsureViewLoaded", StringComparison.OrdinalIgnoreCase) >= 0) continue;
+
+                        var ps = m.GetParameters();
+                        ModCompat.log.Info("[HelperDock] candidate " + t.Name + "." + name + " (" + ps.Length + " params)");
+
+                        TryOpenWith2(this, m);
+                    }
+                    t = t.BaseType;
+                }
+
+                ModCompat.log.Info("[HelperDock] EnsureViewLoaded2: done scanning");
+            }
+            catch (Exception ex)
+            {
+                ModCompat.log.Info("[HelperDock] EnsureViewLoaded2 EX: " + ex.ToString());
+            }
+        }
+
+        private void TryOpenWith2(object target, MethodInfo m)
+        {
+            string[] urls = new string[] {
+                "coui://HelperDock/index.html",
+                "coui://helperdock/index.html",
+                "UI/HelperDock/index.html",
+                "UI/helperdock/index.html",
+                "coui://UI/HelperDock/index.html",
+                "coui://UI/helperdock/index.html"
+            };
+
+            var ps = m.GetParameters();
+            foreach (var url in urls)
+            {
+                object[] args = BuildArgsV2(ps, url);
+                if (args == null) continue;
+
+                try
+                {
+                    m.Invoke(target, args);
+                    ModCompat.log.Info("[HelperDock] VIEW OPEN OK via " + m.Name + " -> " + url);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    ModCompat.log.Info("[HelperDock] call " + m.Name + " failed: " + ex.Message);
+                }
+            }
+        }
+
+        private object[] BuildArgsV2(ParameterInfo[] ps, string url)
+        {
+            if (ps.Length == 1 && ps[0].ParameterType == typeof(string))
+                return new object[] { url };
+
+            if (ps.Length == 2 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(string))
+                return new object[] { "HelperDock", url };
+
+            if (ps.Length == 2 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(bool))
+                return new object[] { url, true };
+
+            if (ps.Length == 2 && ps[0].ParameterType == typeof(bool) && ps[1].ParameterType == typeof(string))
+                return new object[] { true, url };
+
+            if (ps.Length == 3 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(string) && ps[2].ParameterType == typeof(bool))
+                return new object[] { "HelperDock", url, true };
+
+            if (ps.Length == 3 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(bool) && ps[2].ParameterType == typeof(string))
+                return new object[] { "HelperDock", true, url };
+
+            if (ps.Length == 3 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(int) && ps[2].ParameterType == typeof(string))
+                return new object[] { "HelperDock", 0, url };
+
+            return null;
+        }
+    }
+}
