@@ -1,15 +1,26 @@
-[Ll]ibrary/
-[Tt]emp/
-[Oo]bj/
-[Bb]uilds/
+# VS/ドットネットの基本
 bin/
-*/obj/
-*/bin/
+obj/
 .vs/
 *.user
+*.suo
+*.cache
+*.log
+
+# Rider/VSCode
+.idea/
+.vscode/
+
+# NuGet / package管理
+packages/
+*.nupkg
+
+# 都市:CS2系の生成物（もし入っていれば）
+*_win_x86_64.dll
+*_linux_x86_64.so
+*_mac_x86_64.bundle
 *.pdb
-*.dll
-*.so
-*.bundle
-Logs/
-Player.log
+
+# OSごみ
+Thumbs.db
+.DS_Store
