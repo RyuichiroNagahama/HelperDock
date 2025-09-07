@@ -1,3 +1,13 @@
+## Quick links
+- Repo: https://github.com/RyuichiroNagahama/HelperDock
+- Playbook: このファイル
+- Tail cmd: `Get-Content "$env:USERPROFILE\AppData\LocalLow\Colossal Order\Cities Skylines II\Player.log" -Wait -Tail 0 | ? { $_ -match 'HelperDock|EnsureViewLoaded2|candidate|VIEW OPEN' }`
+
+## Latest checkpoint
+> [HelperDock] VIEW OPEN OK via CreateInstance -> coui://HelperDock/index.html
+
+
+
 # HelperDock Playbook
 - Project root: `C:\Users\ryuna\Documents\cs2_mods\HelperDock`
 - Build: `dotnet build -c Release`
