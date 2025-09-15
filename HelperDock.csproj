@@ -3,6 +3,7 @@
     <Configurations>Debug;Release</Configurations>
     <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
     <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
+    <TargetFramework>net48</TargetFramework>
   </PropertyGroup>
   <!--Imports must be after PropertyGroup block-->
   <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
@@ -111,5 +112,8 @@
     <None Include="UI\HelperDock\**\*.*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="legacy\**\*.cs" />
   </ItemGroup>
 </Project>
