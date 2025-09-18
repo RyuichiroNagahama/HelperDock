@@ -24,3 +24,18 @@ packages/
 # OSごみ
 Thumbs.db
 .DS_Store
+# Build artifacts
+bin/
+obj/
+Library/
+
+# Local config / pid
+*.pid
+
+# Temp & backup
+*.off
+*.bak*
+*.tmp
+
+# Legacy experiments (already excluded in csproj, but ignore too)
+legacy/
