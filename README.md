@@ -19,3 +19,24 @@
 - 反射での private フィールド探索
 - `Resources.FindObjectsOfTypeAll(UIVIew)` など Unity 全走査の本番使用
 - `UIView.url = "coui://..."` の“椅子差し替え”ハック
+
+###この行以降は上記と併せてちゃんと再編集が必要！！！
+
+# HelperDock — UIサービス登録型UI（反射なし）
+
+## 絶対方針
+- 反射や `set_url` 乗っ取りは使わない
+- UIサービス（UIManager / Gameface）経由で自前ビューを登録・開閉
+- HUD/シーン再生成に追従
+
+## デバッグ用ホットキー
+- Shift+F2: トグル（表示/非表示）
+- Shift+F12 / ESC: 既定へ戻す（Revert）
+- Shift+F1: 状態ダンプ
+
+## ドキュメント
+- 日本語: `docs/ja/`
+- 英語: `docs/`
+
+## 進行中のブランチ
+- `feature/uimanager-registration`
