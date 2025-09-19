@@ -35,3 +35,10 @@
 [HelperDock] EnsureViewLoaded2: type=HelperDock.UISystem
 [HelperDock] candidate UISystem.CreateInstance (1 params)
 [HelperDock] VIEW OPEN OK via CreateInstance -> coui://HelperDock/index.html
+
+## 2025-09-07
+- DUMP7：UIManager に文字列系UIメソッドなし
+- 新規 DUMP9/TRY9 を実装（Shift+F6/F7）
+- 目的：cohtml.Net.View へ直接 URL を読ませる
+- 次回：DUMP9 の候補で OPEN OK を狙う
+
